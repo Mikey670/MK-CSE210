@@ -1,7 +1,7 @@
 public class Scripture
 {
     //private variables
-    Random rng = new Random();
+    Random _rng = new Random();
     List<Word> _words = new List<Word>();
     Reference _reference;
     int _wordCount = 0;
@@ -58,7 +58,7 @@ public class Scripture
         {
             if (!_isHidden)
             {
-                int index = rng.Next(_words.Count);
+                int index = _rng.Next(_words.Count);
 
                 if (!_words[index].CheckHidden())
                 {
