@@ -1,3 +1,24 @@
+/*
+Michael Knight Mindfulness Project
+
+Extra features:
+    The wait method in the activity class has support for custom animations.
+    Wait(int duration, string type, string chars = "", int animDelay = 250, string splitChar = ",")
+
+    duration determines the length of the pause in miliseconds.
+
+    There are three supported animation types:
+        "n" or number countdown: displays a number countdown based off the total durration and step duration
+        "c" or character: waiting animation iterates through each char in the string "chars"
+        "s" or string: waiting animations iterate through strings from the string "chars", these are seperated by splitchar.
+
+    chars is a string that is used for the animation types "c" and "s", is ignored for "n". This is where the animation frames are passed
+        EX: pipe spinner = "|/-\", breath in animation = "'.','o','O'"
+
+    animDelay is the time in miliseconds between animation frames
+
+    split char is the character to be passed to the split function used for animation type "s"
+*/
 using System;
 
 class Program

@@ -1,9 +1,9 @@
 public class Activity
 {
     //private vars
-    string _activityName = "";
-    string _activityDiscription = "";
-    int _activityDuration = 0;
+    private string _activityName = "";
+    private string _activityDiscription = "";
+    private int _activityDuration = 0;
     //public constructors
     public Activity(string name, string disc, int duration)
     {

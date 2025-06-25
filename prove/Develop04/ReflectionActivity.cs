@@ -1,8 +1,8 @@
 public class ReflectionActivity : Activity
 {
-    string[] _prompts;
-    string[] _questions;
-    Random _rng = new Random();
+    private string[] _prompts;
+    private string[] _questions;
+    private Random _rng = new Random();
 
     public ReflectionActivity(string name, string disc, int duration, string[] prompts, string[] questions) : base(name, disc, duration)
     {

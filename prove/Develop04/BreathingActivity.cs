@@ -1,7 +1,7 @@
 public class BreathingActivity : Activity
 {
-    int _inDuration = 0;
-    int _outDuration = 0;
+    private int _inDuration = 0;
+    private int _outDuration = 0;
 
     public BreathingActivity(string name, string description, int duration, int inDuration, int outDuration) : base(name, description, duration)
     {

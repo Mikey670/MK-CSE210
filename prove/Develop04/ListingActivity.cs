@@ -1,7 +1,7 @@
 public class ListingActivity : Activity
 {
-    string[] _questions;
-    Random _rng = new Random();
+    private string[] _questions;
+    private Random _rng = new Random();
 
     public ListingActivity(string name, string disc, int duration, string[] questions) : base(name, disc, duration)
     {
