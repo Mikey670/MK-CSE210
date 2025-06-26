@@ -1,0 +1,6 @@
+3430
+c,Program 1000 lines in C#,False,5,6000,1000,500
+c,Slay 30 Slimes,False,40,5000,30,10
+e,Eat lots of Grapes,False,40,0
+s,Slay Dragon in Sock Drawer,True,500
+s,CLAIM FREE POINTS!!!,True,5
