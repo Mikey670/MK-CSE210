@@ -1,50 +1,57 @@
-public abstract class Board
+public class Board()
 {
-    protected List<List<Cell>> _cells;
-    protected List<Term> _terms;
-    private int _dimentionX = 1;
-    private int _dimentionY = 1;
-
-    //Get/Set//
-    public int GetDimentionX() => _dimentionX;
-    public int GetDimentionY() => _dimentionY;
-    public void AddDimentionX(int add) => _dimentionX += add;
-    public void AddDimentionY(int add) => _dimentionY += add;
-
-    public Cell GetCell(int posX, int posY) => _cells[posX][posY];
-
-    public void SetCell(int posX, int posY, Cell cell) => _cells[posX][posY] = cell;
-
-    //DISPLAY
-    public void DisplayBoard()
+    struct Coordinate(int x, int y)
     {
-        foreach (var row in _cells)
+        public int _x = x;
+        public int _y = y;
+    }
+
+    private Dictionary<Coordinate, Cell> _content = new Dictionary<Coordinate, Cell>();
+
+    private int _minX = int.MaxValue;
+    private int _maxX = int.MinValue;
+    private int _minY = int.MaxValue;
+    private int _maxY = int.MinValue;
+
+    public void SetCell(Cell cell, int x, int y)
+    {
+        //SET NEW BOUNDS
+        if (x > _maxX) _maxX = x;
+        if (x < _minX) _minX = x;
+        if (y > _maxY) _maxY = y;
+        if (y < _minY) _minY = y;
+
+        //ADD CELL TO CONTENT
+        cell.SetCoordinates(x, y);
+        _content[new Coordinate(x, y)] = cell;
+    }
+
+    public Cell GetCell(int x, int y)
+    {
+        Cell cell;
+
+        if (_content.TryGetValue(new Coordinate(x, y), out cell))
         {
-            Console.WriteLine();
-            foreach (Cell cell in row)
+            return cell;
+        }
+        else return null;        
+    }
+
+    public virtual void Print()
+    {
+        for (int y = _minY; y <= _maxY; y++)
+        {
+            for (int x = _minX; x <= _maxX; x++)
             {
-                Console.Write(" ");
-                cell.DisplayCell();
+                Cell cell;
+
+                if (_content.TryGetValue(new Coordinate(x, y), out cell))
+                {
+                    Console.Write(cell.GetContent() + " ");
+                }
+                else Console.Write("  ");
             }
             Console.WriteLine();
         }
-    }
-    public void DisplayHint(string type, int h, int v)
-    {
-        if (h < 0 || v < 0) return;
-        switch (type)
-        {
-            case "-":
-                Console.WriteLine("Across:" + _terms[h].GetHint());
-                break;
-            case "|":
-                Console.WriteLine("Down:" + _terms[v].GetHint());
-                break;
-            case "+":
-                Console.WriteLine("Across:" + _terms[h].GetHint());
-                Console.WriteLine("Down:" + _terms[v].GetHint());
-                break;
-        }
-        Console.WriteLine("Down");
     }
 }

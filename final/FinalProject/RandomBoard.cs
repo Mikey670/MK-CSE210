@@ -1,286 +1,177 @@
-using System.Collections;
-using System.Security.Cryptography.X509Certificates;
-
 public class RandomBoard : Board
 {
-    public RandomBoard(Random rng, List<Term> terms, int termCount, int allowedFailures)
+    private List<Term> _terms = new List<Term>();
+    private List<Cell> _crossCells = new List<Cell>();
+    private static Random _rng = new Random();
+
+    private bool TryAddTerm(Term term, int x, int y, bool horizontal)
     {
-        CreateBoard(rng, terms, termCount, allowedFailures);
-    }
+        int xI = x;
+        int yI = y;
 
-    private List<Cell> CrossCells = new List<Cell>();
+        List<Cell> termCells = term.GetCells(horizontal);
 
-    private void CreateBoard(Random rng, List<Term> terms, int termCount, int allowedFailures)
-    {
-        _cells = new List<List<Cell>>(1) {new List<Cell>(1) {new Cell()}};
-        _terms = new List<Term>();
-        int failures = 0;
-
-        //select terms
-        for (int i = 0; i < termCount; i++)
+        if (horizontal)
         {
-            Term tempTerm = terms[rng.Next(terms.Count())];
-            _terms.Add(tempTerm);
-            terms.Remove(tempTerm);
+            if (GetCell(x - 1, y) != null) return false;
+            if (GetCell(x - 1, y + 1) != null) return false;
+            if (GetCell(x - 1, y - 1) != null) return false;
+            if (GetCell(x + termCells.Count + 1, y) != null) return false;
+            if (GetCell(x + termCells.Count + 1, y + 1) != null) return false;
+            if (GetCell(x + termCells.Count + 1, y - 1) != null) return false;
+        }
+        else
+        {
+            if (GetCell(x, y - 1) != null) return false;
+            if (GetCell(x + 1, y - 1) != null) return false;
+            if (GetCell(x - 1, y - 1) != null) return false;
+            if (GetCell(x, y + termCells.Count + 1) != null) return false;
+            if (GetCell(x + 1, y + termCells.Count + 1) != null) return false;
+            if (GetCell(x - 1, y + termCells.Count + 1) != null) return false;
         }
 
-        List<Term> unplacedTerms = _terms;
-
-        Term firstTerm = unplacedTerms[rng.Next(unplacedTerms.Count)];
-        AddTerm(firstTerm, true, 0, 0);
-        unplacedTerms.Remove(firstTerm);
-
-        List<Term> uncheckedTerms = unplacedTerms;
-
-        while (unplacedTerms.Count > 0 && failures < allowedFailures)
+        foreach (Cell cell in termCells)
         {
-            if (failures >= allowedFailures)
+            Cell existingCell = GetCell(x, y);
+
+            if (existingCell != null)
             {
-                Console.WriteLine("WARNING: Max faliure limit met");
+                if (existingCell.GetContent() != cell.GetContent()) return false;
             }
-
-            bool success = false;
-            if (uncheckedTerms.Count == 0) uncheckedTerms = unplacedTerms;
-            //select random term
-            Term term = uncheckedTerms[rng.Next(uncheckedTerms.Count)];
-            uncheckedTerms.Remove(term);
-
-            List<int> indexesToSearch = new List<int>();
-
-            for (int i = 0; i < term.GetTerm().Length; i++)
+            else
             {
-                indexesToSearch.Add(i);
-            }
-
-            //Get random term index
-            while (indexesToSearch.Count > 0)
-            {
-                int letterIndex = indexesToSearch[rng.Next(indexesToSearch.Count)];
-                indexesToSearch.Remove(letterIndex);
-
-                List<Cell> cellsToSearch = new List<Cell>();
-
-                foreach (Cell c in CrossCells)
+                if (horizontal)
                 {
-                    if (c.GetContent() == $"{term.GetTerm()[letterIndex]}") cellsToSearch.Add(c);
+                    if (GetCell(x, y + 1) != null) return false;
+                    if (GetCell(x, y - 1) != null) return false;
                 }
-
-                while (cellsToSearch.Count > 0)
+                else
                 {
-                    Cell cell = cellsToSearch[rng.Next(cellsToSearch.Count)];
-                    cellsToSearch.Remove(cell);
+                    if (GetCell(x + 1, y) != null) return false;
+                    if (GetCell(x - 1, y) != null) return false;
+                }
+            }
 
-                    int[] termCoords = GetStartCoords(letterIndex, cell);
+            if (horizontal) x++;
+            else y++;
+        }
 
-                    if (cell.GetStringType() == "-")
+        x = xI;
+        y = yI;
+
+        bool lastWasCross = false;
+
+        for (int i = 0; i < termCells.Count; i++)
+        {
+            Cell existingCell = GetCell(x, y);
+
+            if (existingCell != null)
+            {
+                existingCell.SetAlternateHint(termCells[i].GetHint());
+                _crossCells.Remove(existingCell);
+                try { _crossCells.Remove(GetCell(x - 1, y)); } catch { }
+                try { _crossCells.Remove(GetCell(x + 1, y)); } catch { }
+                try { _crossCells.Remove(GetCell(x, y - 1)); } catch { }
+                try { _crossCells.Remove(GetCell(x, y + 1)); } catch { }
+
+                lastWasCross = true;
+            }
+            else
+            {
+                if (!lastWasCross) _crossCells.Add(termCells[i]);
+                else lastWasCross = false;
+
+                SetCell(termCells[i], x, y);
+            }
+
+            if (horizontal) x++;
+            else y++;
+        }
+
+        _terms.Add(term);
+        return true;
+    }
+
+    public static void Shuffle<T>(IList<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = _rng.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
+
+    public RandomBoard(List<Term> terms, int count)
+    {
+        int termsChecked = 0;
+        int crossesChecked = 0;
+        int cellsCompared = 0;
+        Term firstTerm = terms[_rng.Next(0, terms.Count)];
+        terms.Remove(firstTerm);
+
+        TryAddTerm(firstTerm, 0, 0, true);
+
+        bool placed = true;
+
+        while (_terms.Count < count && placed)
+        {
+            placed = false;
+
+            List<Cell> crossesToCheck = _crossCells;
+            Shuffle(crossesToCheck);
+
+            List<Term> termsToCheck = terms;
+            Shuffle(termsToCheck);
+
+            foreach (Cell cross in crossesToCheck)
+            {
+                crossesChecked++;
+                foreach (Term term in termsToCheck)
+                {
+                    termsChecked++;
+                    List<Cell> termCells = term.GetCells(!cross.GetHorizontal());
+                    List<Cell> scrambledCells = termCells;
+                    Shuffle(scrambledCells);
+
+                    foreach (Cell cell in scrambledCells)
                     {
-                        if (AddTerm(term, true, termCoords[0], termCoords[1]))
+                        cellsCompared++;
+                        if (cell.GetContent() == cross.GetContent())
                         {
-                            unplacedTerms.Remove(term);
-                            success = true;
-                            break;
+                            int termCellIndex = termCells.IndexOf(cell);
+
+                            int x = cross.GetX();
+                            int y = cross.GetY();
+
+                            if (!cross.GetHorizontal())
+                            {
+                                x -= termCellIndex;
+                            }
+                            else
+                            {
+                                y -= termCellIndex;
+                            }
+
+                            if (TryAddTerm(term, x, y, !cross.GetHorizontal()))
+                            {
+                                placed = true;
+                                terms.Remove(term);
+                                break;
+                            }
                         }
                     }
+                    if (placed) break;
                 }
-                if (success)
-                {
-                    break;
-                }
-            }
-            if (!success)
-            {
-                failures++;
-            }
-        }
-    }
-
-    private int[] LookupCellCoords(Cell cell)
-    {
-        for (int x = 0; x < GetDimentionX(); x++)
-        {
-            for (int y = 0; y < GetDimentionY(); y++)
-            {
-                if (_cells[y][x] == cell) return [x, y];
-            }
-        }
-        return null;
-    }
-
-    private int[] GetStartCoords(int crossIndex, Cell crossCell)
-    {
-        int[] cellCoords = LookupCellCoords(crossCell);
-
-        switch (crossCell.GetStringType())
-        {
-            case "-":
-                while (crossIndex > 0)
-                {
-                    crossIndex--;
-                    cellCoords[0]--;
-                }
-                break;
-            case "|":
-                while (crossIndex > 0)
-                {
-                    crossIndex--;
-                    cellCoords[1]--;
-                }
-                break;
-        }
-
-        return cellCoords;
-    }
-    private bool CheckPlacement(Term term, bool horizontal, int x, int y)
-    {
-        if (horizontal)
-        {
-            for (int i = 0; i < term.GetTerm().Length; i++)
-            {
-                if (x < 0) x++;
-                else if (x >= GetDimentionX()) return true;
-                else if (GetCell(x, y).GetContent() != $"{term.GetTerm()[i]}") return false;
-            }
-        }
-        else
-        {
-            for (int i = 0; i < term.GetTerm().Length; i++)
-            {
-                if (y < 0) y++;
-                else if (y > GetDimentionY()) return true;
-                else if (GetCell(x, y).GetContent() != $"{term.GetTerm()[i]}") return false;
-            }
-        }
-        return true;
-    }
-
-    private bool AddTerm(Term term, bool horizontal, int x, int y)
-    {
-        if (!CheckPlacement(term, horizontal, x, y)) return false;
-
-        //If coord is out of bounds, add rows/columns accordingly
-        if (y < 0)
-        {
-            for (int i = 0; i > y; i--)
-            {
-                AddRow(true);
-            }
-
-            y = 0;
-        }
-        else if (y > GetDimentionY())
-        {
-            for (int i = 0; i < GetDimentionY() - y; i++)
-            {
-                AddRow(false);
+                if (placed) break;
             }
         }
 
-        if (x < 0)
-        {
-            for (int i = 0; i > x; i--)
-            {
-                AddColumn(true);
-            }
-
-            x = 0;
-        }
-        else if (x > GetDimentionX())
-        {
-            for (int i = 0; i < GetDimentionX() - x; i++)
-            {
-                AddColumn(false);
-            }
-        }
-
-        //Add cells
-        if (horizontal)
-        {
-            foreach (char c in term.GetTerm())
-            {
-                if (x > GetDimentionX())
-                {
-                    AddColumn(false);
-                }
-
-                if (GetCell(x, y).GetStringType() == "n")
-                {
-                    LetterCell tempCell = new LetterCell($"{c}", "-", _terms.IndexOf(term));
-                    SetCell(x, y, tempCell);
-                    CrossCells.Add(tempCell);
-                }
-                else
-                {
-                    GetCell(x, y).SetStringType("+");
-                    GetCell(x, y).SetHintIndexH(_terms.IndexOf(term));
-                    CrossCells.Remove(GetCell(x, y));
-                }
-
-                x++;
-            }
-        }
-        else
-        {
-            foreach (char c in term.GetTerm())
-            {
-                if (y > GetDimentionY())
-                {
-                    AddRow(false);
-                }
-
-                if (GetCell(x, y).GetStringType() == "n")
-                {
-                    LetterCell tempCell = new LetterCell($"{c}", "|", _terms.IndexOf(term));
-                    SetCell(x, y, tempCell);
-                }
-                else
-                {
-                    GetCell(x, y).SetStringType("+");
-                    GetCell(x, y).SetHintIndexV(_terms.IndexOf(term));
-                }
-
-                y++;
-            }
-        }
-        return true;
-    }
-
-    private void AddRow(bool before)
-    {
-        List<Cell> newRow = new List<Cell>() { };
-        for (int i = 0; i < GetDimentionX(); i++)
-        {
-            newRow.Add(new Cell());
-        }
-
-        if (before)
-        {
-            _cells.Insert(0, newRow);
-        }
-        else
-        {
-            _cells.Add(newRow);
-        }
-
-        AddDimentionY(1);
-    }
-
-    private void AddColumn(bool before)
-    {
-        if (before)
-        {
-            foreach (List<Cell> list in _cells)
-            {
-                list.Insert(0, new Cell());
-            }
-        }
-        else
-        {
-            foreach (List<Cell> list in _cells)
-            {
-                list.Add(new Cell());
-            }
-        }
-
-        AddDimentionX(1);
+        Console.WriteLine("crosses scanned " + crossesChecked);
+        Console.WriteLine("terms scanned " + termsChecked);
+        Console.WriteLine("cells compared " + cellsCompared);
     }
 }

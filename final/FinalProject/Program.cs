@@ -1,27 +1,31 @@
-using System;
-
 class Program
 {
-    static void Main(string[] args)
+
+
+    public static void Main(string[] args)
     {
         List<Term> testTerms = new List<Term>
         {
-            new Term("orange", "An orange fruit"),
-            new Term("banana", "A yellow fruit"),
+            new Term("hamburger", "Favorite american food named after German town."),
+            new Term("pizza", "A cheesy triangle with peparoni"),
+            new Term("zebra", "A striped equine"),
             new Term("apple", "A red fruit"),
-            new Term("grannysmith", "A green apple"),
-            new Term("pepper", "A spicy fruit"),
-            new Term("grapefruit", "An overlarge orange"),
-            new Term("gumbi", "A clay man, friend of poki"),
-            new Term("hogwarts", "The most popular school named after a skin afliction"),
-            new Term("superman", "Jerry Sinfeild's hero"),
-            new Term("monkey", "A harry tailed primate that loves bananas")
+            new Term("banana", "A yellow fruit"),
+            new Term("sausage", "Ground meat stuffed into intestines"),
+            new Term("capilary", "Responsible for bruising"),
+            new Term("anteater", "Eats ants"),
+            new Term("sandwich", "has little to do with sand or witches"),
+            new Term("groundhog", "Bill Murrey's favorite day"),
+            new Term("monday", "Garfield's favorite day"),
+            new Term("testtube", "he's a _____ baby with lizard DNA, born in the basement of the CIA"),
+            new Term("sauce", "Sometimes made with apples"),
+            new Term("frisbee", "A throwing and catching disk"),
+            new Term("discus", "A throwing and get out of the way disk"),
         };
 
-        Random rng = new Random();
+        RandomBoard board = new RandomBoard(testTerms, 10);
 
-        RandomBoard2 testBoard = new RandomBoard2(testTerms, testTerms.Count, 100);
-
-        testBoard.DisplayBoard();
+        board.Print();
     }
+
 }

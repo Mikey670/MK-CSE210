@@ -1,22 +1,50 @@
-using System.Dynamic;
+using System;
+using System.Security.Cryptography.X509Certificates;
 
-public class Cell
+public class Cell(string content, bool horizontal, string hint)
 {
-    protected string _type = "n";
-    public string GetStringType() => _type;
+    private string _content = content;
+    private bool _horizontal = horizontal;
+    private string _hint = hint;
+    private string _alternateHint = null;
+    private int _x;
+    private int _y;
 
-    public virtual void DisplayCell()
+    public string GetContent() => _content;
+    public bool GetHorizontal() => _horizontal;
+    public string GetHint() => _hint;
+    public void SetAlternateHint(string hint) => _alternateHint = hint;
+
+    public void SetCoordinates(int x, int y)
     {
-        Console.Write(" ");
+        _x = x;
+        _y = y;
     }
+    public int GetX() => _x;
+    public int GetY() => _y;
 
-    public virtual void SetHintIndexH(int index) {}
-    public virtual void SetHintIndexV(int index) {}
-    public virtual void SetStringType(string type) {}
-    public virtual string GetContent() => " ";
-
-    public virtual int[] GetHintIndex()
+    public void PrintHints()
     {
-        return [-1, -1];
+        if (_horizontal)
+        {
+            Console.WriteLine("Across:");
+            Console.WriteLine($"    {_hint}");
+
+            if (_alternateHint != null)
+            {
+                Console.WriteLine("Down:");
+                Console.WriteLine($"    {_alternateHint}");
+            }
+        }
+        else
+        {
+            if (_alternateHint != null)
+            {
+                Console.WriteLine("Across:");
+                Console.WriteLine($"    {_alternateHint}");
+            }
+            Console.WriteLine("Down:");
+            Console.WriteLine($"    {_hint}");
+        }
     }
 }
