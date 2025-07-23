@@ -1,18 +1,23 @@
 public class Board()
 {
-    struct Coordinate(int x, int y)
+    public struct Coordinate(int x, int y)
     {
         public int _x = x;
         public int _y = y;
     }
 
-    private Dictionary<Coordinate, Cell> _content = new Dictionary<Coordinate, Cell>();
+    protected Dictionary<Coordinate, Cell> _content = new Dictionary<Coordinate, Cell>();
 
-    private int _minX = int.MaxValue;
-    private int _maxX = int.MinValue;
-    private int _minY = int.MaxValue;
-    private int _maxY = int.MinValue;
+    protected int _minX = int.MaxValue;
+    protected int _maxX = int.MinValue;
+    protected int _minY = int.MaxValue;
+    protected int _maxY = int.MinValue;
 
+    public Dictionary<Coordinate, Cell> GetContent() => _content;
+    public int GetMinX() => _minX;
+    public int GetMaxX() => _maxX;
+    public int GetMinY() => _minY;
+    public int GetMaxY() => _maxY;
     public void SetCell(Cell cell, int x, int y)
     {
         //SET NEW BOUNDS
@@ -34,7 +39,7 @@ public class Board()
         {
             return cell;
         }
-        else return null;        
+        else return null;
     }
 
     public virtual void Print()
@@ -53,5 +58,34 @@ public class Board()
             }
             Console.WriteLine();
         }
+    }
+
+    public static bool Compare(Board board1, Board board2)
+    {
+        for (int y = board1._minY; y <= board1._maxY; y++)
+        {
+            for (int x = board1._minX; x <= board1._maxX; x++)
+            {
+                Cell cell1;
+                Cell cell2;
+
+                if (board1._content.TryGetValue(new Coordinate(x, y), out cell1))
+                {
+                    if (board2._content.TryGetValue(new Coordinate(x, y), out cell2))
+                    {
+                        if (cell1.GetContent() != cell2.GetContent()) return false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (board2._content.TryGetValue(new Coordinate(x, y), out _))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

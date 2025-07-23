@@ -1,5 +1,3 @@
-using System;
-using System.Security.Cryptography.X509Certificates;
 
 public class Cell(string content, bool horizontal, string hint)
 {
@@ -11,8 +9,10 @@ public class Cell(string content, bool horizontal, string hint)
     private int _y;
 
     public string GetContent() => _content;
+    public void SetContent(string content) => _content = content;
     public bool GetHorizontal() => _horizontal;
     public string GetHint() => _hint;
+    public string GetAlternateHint() => _alternateHint;
     public void SetAlternateHint(string hint) => _alternateHint = hint;
 
     public void SetCoordinates(int x, int y)
